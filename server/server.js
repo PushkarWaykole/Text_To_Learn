@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 
 import protectedRoutes from './routes/protectedRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.get('/', (req, res) => {
 });
 
 // ── API Routes ─────────────────────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
 app.use('/api', protectedRoutes);
 
 // ── Global Error Handler ───────────────────────────────────────────────────
