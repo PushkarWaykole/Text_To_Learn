@@ -12,6 +12,34 @@
   --color-accent-500: #10b981;
 }
 
+:root {
+  --bg-color: #f8fafc;
+  --text-color: #0f172a;
+  --text-secondary: #64748b;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --sidebar-bg: #fff;
+  --sidebar-border: rgba(0, 0, 0, 0.05);
+  --sidebar-link: #475569;
+  --sidebar-link-hover: #1e293b;
+  --input-bg: rgba(0, 0, 0, 0.03);
+  --input-border: rgba(0, 0, 0, 0.08);
+}
+
+.dark-mode {
+  --bg-color: #0a0a0f;
+  --text-color: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --sidebar-bg: rgba(255, 255, 255, 0.02);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-link: #94a3b8;
+  --sidebar-link-hover: #a5b4fc;
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+}
+
 /* ── Base ──────────────────────────────────────────────────────────────── */
 *,
 *::before,
@@ -25,11 +53,12 @@ html {
 
 body {
   font-family: 'Inter', sans-serif;
-  background: #0a0a0f;
-  color: #f1f5f9;
+  background: var(--bg-color);
+  color: var(--text-color);
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
 /* ── Animated Gradient Orbs ────────────────────────────────────────────── */
@@ -98,10 +127,10 @@ body {
 
 /* ── Glass Card ────────────────────────────────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
 }
 
@@ -164,10 +193,10 @@ body {
 
 /* ── Input ─────────────────────────────────────────────────────────────── */
 .input-dark {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: 12px;
-  color: #f1f5f9;
+  color: var(--text-color);
   font-family: 'Inter', sans-serif;
   font-size: 15px;
   padding: 14px 18px;
@@ -177,21 +206,22 @@ body {
 }
 
 .input-dark::placeholder {
-  color: #475569;
+  color: var(--text-secondary);
+  opacity: 0.6;
 }
 
 .input-dark:focus {
   border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+  background: var(--input-bg);
 }
 
 /* ── Sidebar ───────────────────────────────────────────────────────────── */
 .sidebar {
   width: 240px;
   min-height: 100vh;
-  background: rgba(255, 255, 255, 0.02);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   padding: 24px 12px;
@@ -206,7 +236,7 @@ body {
   gap: 10px;
   padding: 10px 14px;
   border-radius: 10px;
-  color: #94a3b8;
+  color: var(--sidebar-link);
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
@@ -220,12 +250,13 @@ body {
 
 .sidebar-link:hover {
   background: rgba(99, 102, 241, 0.12);
-  color: #a5b4fc;
+  color: var(--sidebar-link-hover);
 }
 
 .sidebar-link.active {
-  background: rgba(99, 102, 241, 0.18);
-  color: #818cf8;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary-500);
+  font-weight: 700;
 }
 
 /* ── Fade-in animation ─────────────────────────────────────────────────── */

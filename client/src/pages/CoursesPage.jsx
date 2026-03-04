@@ -22,7 +22,7 @@ export default function CoursesPage() {
     }, []);
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
+        <div style={{ display: 'flex', minHeight: '100vh' }}>
             <Sidebar />
 
             {/* Main content */}
@@ -33,6 +33,7 @@ export default function CoursesPage() {
                     position: 'absolute', width: 400, height: 400, borderRadius: '50%',
                     background: 'radial-gradient(circle, rgba(99,102,241,0.08), transparent)',
                     top: -100, right: -100, pointerEvents: 'none',
+                    opacity: document.body.classList.contains('dark-mode') ? 1 : 0.3
                 }} />
 
                 {/* Header */}
@@ -40,14 +41,14 @@ export default function CoursesPage() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                         <h1 style={{
                             fontFamily: 'Outfit, sans-serif', fontWeight: 800,
-                            fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', color: '#f1f5f9',
+                            fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', color: 'var(--text-color)',
                             letterSpacing: '-0.03em', lineHeight: 1.1,
                         }}>
                             My Courses
                         </h1>
                         <span className="badge badge-indigo">{myCourses.length} courses</span>
                     </div>
-                    <p style={{ color: '#64748b', fontSize: 15 }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 15 }}>
                         All the courses you've generated so far.
                     </p>
                 </div>
@@ -60,14 +61,14 @@ export default function CoursesPage() {
                     ) : myCourses.length === 0 ? (
                         <div className="glass" style={{
                             padding: '60px 40px', textAlign: 'center',
-                            borderStyle: 'dashed', borderColor: 'rgba(99,102,241,0.2)',
+                            borderStyle: 'dashed', borderColor: 'var(--glass-border)',
                             maxWidth: 600
                         }}>
                             <div style={{ fontSize: 56, marginBottom: 16 }}>🎓</div>
-                            <h3 style={{ fontWeight: 700, fontSize: 18, color: '#f1f5f9', marginBottom: 8 }}>
+                            <h3 style={{ fontWeight: 700, fontSize: 18, color: 'var(--text-color)', marginBottom: 8 }}>
                                 No courses yet
                             </h3>
-                            <p style={{ color: '#64748b', fontSize: 14, margin: '0 auto 24px' }}>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: '0 auto 24px' }}>
                                 Head over to the Dashboard to create your first free AI course.
                             </p>
                             <Link to="/" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block' }}>
@@ -77,12 +78,12 @@ export default function CoursesPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
                             {myCourses.map(course => (
-                                <Link to={`/course/${course._id}`} key={course._id} className="glass glass-hover flex flex-col p-6 h-full" style={{ textDecoration: 'none' }}>
-                                    <h3 className="text-lg font-bold text-slate-100 mb-2">{course.title}</h3>
-                                    <p className="text-sm text-slate-400 mb-4">{course.topic}</p>
-                                    <div className="mt-auto flex items-center justify-between text-xs text-slate-500 font-semibold uppercase tracking-wider">
-                                        <span>{course.modules?.length || 0} Modules</span>
-                                        <span className="text-indigo-400">View Course →</span>
+                                <Link to={`/course/${course._id}`} key={course._id} className="glass glass-hover p-8 h-full flex flex-col" style={{ textDecoration: 'none' }}>
+                                    <h3 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-color)', marginBottom: 8 }}>{course.title}</h3>
+                                    <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 20 }}>{course.topic}</p>
+                                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{course.modules?.length || 0} Modules</span>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: '#6366f1' }}>View →</span>
                                     </div>
                                 </Link>
                             ))}

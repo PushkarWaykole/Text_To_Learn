@@ -37,9 +37,25 @@ const steps = [
 
 export default function LandingPage() {
     const { loginWithRedirect, isLoading } = useAuth0();
+    const [isDarkMode, setIsDarkMode] = React.useState(() => {
+        const saved = localStorage.getItem('theme');
+        return saved ? saved === 'dark' : true; // Default to dark mode
+    });
+
+    React.useEffect(() => {
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [isDarkMode]);
+
+    const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
     return (
-        <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: '#0a0a0f' }}>
+        <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden', background: 'var(--bg-color)', color: 'var(--text-color)', transition: '0.4s ease' }}>
 
             {/* Background orbs */}
             <div className="orb orb-1" />
@@ -48,23 +64,50 @@ export default function LandingPage() {
 
             {/* Nav */}
             <nav style={{
-                position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+                position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '18px 48px',
-                background: 'rgba(10,10,15,0.7)',
+                background: 'var(--glass-bg)',
                 backdropFilter: 'blur(16px)',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                borderBottom: '1px solid var(--glass-border)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 26 }}>🧠</span>
-                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 20, color: '#f1f5f9', letterSpacing: '-0.02em' }}>
+                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--text-color)', letterSpacing: '-0.02em' }}>
                         Text<span className="gradient-text">-to-Learn</span>
                     </span>
                 </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                    <button className="btn-ghost" onClick={() => loginWithRedirect()}>Sign In</button>
-                    <button className="btn-primary" onClick={() => loginWithRedirect()} disabled={isLoading}>
-                        {isLoading ? 'Loading…' : 'Get Started →'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                    <button
+                        onClick={toggleTheme}
+                        style={{
+                            background: 'var(--input-bg)',
+                            border: '1px solid var(--glass-border)',
+                            color: 'var(--text-color)',
+                            padding: '8px 12px',
+                            borderRadius: '10px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            fontSize: 14,
+                            fontWeight: 600,
+                            transition: '0.2s'
+                        }}
+                        className="glass-hover"
+                    >
+                        {isDarkMode ? '☀️' : '🌙'}
+                    </button>
+                    <button
+                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500, cursor: 'pointer', transition: '0.2s' }}
+                        onMouseEnter={e => e.target.style.color = 'var(--text-color)'}
+                        onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
+                        onClick={() => loginWithRedirect()}
+                    >
+                        Log In
+                    </button>
+                    <button className="btn-primary" style={{ padding: '10px 24px', borderRadius: 10, fontSize: 14 }} onClick={() => loginWithRedirect()} disabled={isLoading}>
+                        {isLoading ? 'Loading…' : 'Sign Up'}
                     </button>
                 </div>
             </nav>
@@ -73,121 +116,164 @@ export default function LandingPage() {
             <section style={{
                 minHeight: '100vh', display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
-                padding: '120px 24px 80px',
+                padding: '160px 24px 100px',
                 position: 'relative', zIndex: 10, textAlign: 'center',
             }}>
-                <div className="badge badge-indigo fade-up" style={{ marginBottom: 24 }}>
-                    ✨ Powered by Google Gemini AI
+                <div className="badge badge-indigo animate-bounce fade-up" style={{ marginBottom: 32, fontSize: 13, padding: '6px 16px' }}>
+                    🚀 New: Gemini 2.5 Flash Support Integrated
                 </div>
 
                 <h1 className="fade-up fade-up-1" style={{
                     fontFamily: 'Outfit, sans-serif',
-                    fontSize: 'clamp(2.8rem, 7vw, 5.5rem)',
+                    fontSize: 'clamp(3rem, 8vw, 6.5rem)',
                     fontWeight: 900,
-                    lineHeight: 1.08,
-                    letterSpacing: '-0.04em',
-                    color: '#f1f5f9',
-                    maxWidth: 900,
-                    marginBottom: 24,
+                    lineHeight: 1.02,
+                    letterSpacing: '-0.05em',
+                    color: 'var(--text-color)',
+                    maxWidth: 1000,
+                    marginBottom: 32,
+                    textShadow: '0 0 40px rgba(99,102,241,0.1)'
                 }}>
-                    Turn Any Topic Into a{' '}
-                    <span className="gradient-text">Complete Course</span>{' '}
-                    in Seconds
+                    Your Personalized <br />
+                    <span className="gradient-text">Learning Universe</span> <br />
+                    Built by AI
                 </h1>
 
                 <p className="fade-up fade-up-2" style={{
-                    fontSize: 'clamp(1rem, 2.2vw, 1.25rem)',
-                    color: '#94a3b8',
-                    maxWidth: 600,
-                    lineHeight: 1.7,
-                    marginBottom: 40,
+                    fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)',
+                    color: 'var(--text-secondary)',
+                    maxWidth: 700,
+                    lineHeight: 1.6,
+                    marginBottom: 56,
                 }}>
-                    Text-to-Learn uses AI to generate structured, multi-module courses with
-                    embedded videos, multilingual audio, and PDF export — instantly.
+                    Stop searching. Start learning. Text-to-Learn transforms your curiosities
+                    into structured modules with video, audio, and quizzes — instantly.
                 </p>
 
-                <div className="fade-up fade-up-3" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <div className="fade-up fade-up-3" style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button
                         className="btn-primary"
-                        style={{ fontSize: 17, padding: '15px 36px', borderRadius: 14 }}
+                        style={{ fontSize: 18, padding: '18px 48px', borderRadius: 16 }}
                         onClick={() => loginWithRedirect()}
                         disabled={isLoading}
                     >
-                        {isLoading ? 'Loading…' : '🚀 Start Learning Free'}
+                        {isLoading ? 'Loading…' : 'Get Started for Free'}
                     </button>
-                    <button className="btn-ghost" style={{ fontSize: 15, padding: '14px 28px' }}
+                    <button className="glass-hover" style={{
+                        fontSize: 16, padding: '16px 32px', borderRadius: 16, border: '1px solid var(--glass-border)',
+                        background: 'var(--glass-bg)', color: 'var(--text-color)', cursor: 'pointer', transition: '0.3s'
+                    }}
                         onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}>
-                        See Features ↓
+                        Explore Features
                     </button>
                 </div>
 
-                {/* Hero visual mockup */}
-                <div className="fade-up fade-up-4 glass" style={{
-                    marginTop: 64, maxWidth: 800, width: '100%', padding: 24,
-                    boxShadow: '0 40px 120px rgba(99,102,241,0.2)',
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ef4444' }} />
-                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#f59e0b' }} />
-                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#10b981' }} />
-                        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)', marginLeft: 8 }} />
+                {/* Tech Stack Bar */}
+                <div className="fade-up fade-up-4" style={{ marginTop: 100, width: '100%', opacity: 0.8 }}>
+                    <p style={{ fontSize: 13, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: 32, fontWeight: 600 }}>Built with Industry Standards</p>
+                    <div style={{
+                        display: 'flex',
+                        gap: 'min(50px, 8vw)',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}>
+                        {[
+                            { name: 'Google Gemini', logo: null },
+                            { name: 'React', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg' },
+                            { name: 'Auth0', logo: 'https://www.vectorlogo.zone/logos/auth0/auth0-icon.svg' },
+                            { name: 'Node.js', logo: 'https://www.vectorlogo.zone/logos/nodejs/nodejs-icon.svg' },
+                            { name: 'MongoDB', logo: 'https://www.vectorlogo.zone/logos/mongodb/mongodb-icon.svg' },
+                            { name: 'Tailwind', logo: 'https://www.vectorlogo.zone/logos/tailwindcss/tailwindcss-icon.svg' }
+                        ].map(tech => (
+                            <div
+                                key={tech.name}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 10,
+                                    filter: 'grayscale(1) opacity(0.6)',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'default'
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.filter = 'grayscale(0) opacity(1)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.filter = 'grayscale(1) opacity(0.6)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                }}
+                            >
+                                {tech.logo && <img src={tech.logo} alt={tech.name} style={{ height: 24, width: 'auto', objectFit: 'contain' }} />}
+                                <span style={{ fontSize: 15, fontWeight: 700, color: '#94a3b8', whiteSpace: 'nowrap' }}>{tech.name}</span>
+                            </div>
+                        ))}
                     </div>
-                    <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                        {/* Fake sidebar */}
-                        <div style={{ width: 140, flexShrink: 0 }}>
-                            {['Introduction', 'Core Concepts', 'Advanced Topics', 'Exercises', 'Summary'].map((item, i) => (
-                                <div key={i} className="skeleton" style={{
-                                    height: 32, marginBottom: 8, borderRadius: 8,
-                                    opacity: i === 0 ? 1 : 0.5 + i * 0.1,
-                                    background: i === 0
-                                        ? 'rgba(99, 102, 241, 0.25)'
-                                        : undefined,
-                                }}>
-                                    {i === 0 && <span style={{ padding: '6px 10px', fontSize: 12, color: '#a5b4fc', display: 'block' }}>📖 {item}</span>}
-                                </div>
-                            ))}
+                </div>
+            </section>
+
+            {/* Comparison Section */}
+            <section style={{ padding: '120px 24px', background: 'var(--input-bg)' }}>
+                <div style={{ maxWidth: 1000, margin: '0 auto', textAlign: 'center' }}>
+                    <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-color)', marginBottom: 60, letterSpacing: '-0.02em' }}>
+                        The Future vs The Past
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32 }}>
+                        {/* Old Way */}
+                        <div className="glass" style={{ padding: 40, textAlign: 'left', borderColor: 'rgba(239, 68, 68, 0.1)' }}>
+                            <div style={{ fontSize: 32, marginBottom: 20 }}>🐌</div>
+                            <h3 style={{ fontSize: 20, fontWeight: 800, color: '#ef4444', marginBottom: 16 }}>Traditional Search</h3>
+                            <ul style={{ color: 'var(--text-secondary)', spaceY: '12px', paddingLeft: 0, listStyle: 'none' }}>
+                                <li style={{ marginBottom: 12 }}>❌ Hours of searching YouTube</li>
+                                <li style={{ marginBottom: 12 }}>❌ Fragmented tutorial series</li>
+                                <li style={{ marginBottom: 12 }}>❌ No structured reading material</li>
+                                <li>❌ Impossible to export offline</li>
+                            </ul>
                         </div>
-                        {/* Fake content */}
-                        <div style={{ flex: 1 }}>
-                            <div className="skeleton" style={{ height: 20, width: '60%', marginBottom: 12 }} />
-                            <div className="skeleton" style={{ height: 14, marginBottom: 8 }} />
-                            <div className="skeleton" style={{ height: 14, width: '85%', marginBottom: 8 }} />
-                            <div className="skeleton" style={{ height: 14, width: '70%', marginBottom: 16 }} />
-                            <div className="skeleton" style={{ height: 100, borderRadius: 10, marginBottom: 12 }} />
-                            <div className="skeleton" style={{ height: 14, marginBottom: 8 }} />
-                            <div className="skeleton" style={{ height: 14, width: '80%' }} />
+                        {/* New Way */}
+                        <div className="glass" style={{ padding: 40, textAlign: 'left', borderColor: 'rgba(16, 185, 129, 0.3)', background: 'rgba(16, 185, 129, 0.05)' }}>
+                            <div style={{ fontSize: 32, marginBottom: 20 }}>⚡</div>
+                            <h3 style={{ fontSize: 20, fontWeight: 800, color: '#10b981', marginBottom: 16 }}>Text-to-Learn AI</h3>
+                            <ul style={{ color: 'var(--text-secondary)', spaceY: '12px', paddingLeft: 0, listStyle: 'none' }}>
+                                <li style={{ marginBottom: 12 }}>✅ Structural flow in 10 seconds</li>
+                                <li style={{ marginBottom: 12 }}>✅ Curated videos for every block</li>
+                                <li style={{ marginBottom: 12 }}>✅ Natural AI Narration (TTS)</li>
+                                <li>✅ Pro-grade PDF Exports</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* Features */}
-            <section id="features" style={{ padding: '100px 24px', position: 'relative', zIndex: 10 }}>
-                <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: 64 }}>
-                        <div className="badge badge-emerald" style={{ marginBottom: 16 }}>Features</div>
+            <section id="features" style={{ padding: '140px 24px', position: 'relative', zIndex: 10 }}>
+                <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 80 }}>
+                        <div className="badge badge-emerald" style={{ marginBottom: 20, padding: '6px 16px' }}>Ecosystem</div>
                         <h2 style={{
-                            fontFamily: 'Outfit, sans-serif', fontWeight: 800,
-                            fontSize: 'clamp(1.8rem, 4vw, 3rem)', color: '#f1f5f9',
-                            letterSpacing: '-0.03em',
+                            fontFamily: 'Outfit, sans-serif', fontWeight: 900,
+                            fontSize: 'clamp(2.5rem, 6vw, 4rem)', color: 'var(--text-color)',
+                            letterSpacing: '-0.04em', lineHeight: 1.1
                         }}>
-                            Everything You Need to Learn Faster
+                            Hyper-Personalized <br /> <span className="gradient-text">Learning Tools</span>
                         </h2>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 24 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32 }}>
                         {features.map((f, i) => (
-                            <div key={i} className="glass glass-hover" style={{ padding: 28 }}>
+                            <div key={i} className="glass glass-hover" style={{ padding: 40, borderRadius: 24 }}>
                                 <div style={{
-                                    width: 52, height: 52, borderRadius: 14, marginBottom: 18,
+                                    width: 64, height: 64, borderRadius: 20, marginBottom: 24,
                                     background: `linear-gradient(135deg, ${f.color.replace('from-', '').replace('to-', '')})`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: 26,
+                                    fontSize: 32,
                                     backgroundImage: `linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to))`,
+                                    boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
                                 }}>
                                     <span>{f.icon}</span>
                                 </div>
-                                <h3 style={{ fontWeight: 700, fontSize: 17, color: '#f1f5f9', marginBottom: 10 }}>{f.title}</h3>
-                                <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.7 }}>{f.desc}</p>
+                                <h3 style={{ fontWeight: 800, fontSize: 22, color: 'var(--text-color)', marginBottom: 14 }}>{f.title}</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: 16, lineHeight: 1.7 }}>{f.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -195,30 +281,39 @@ export default function LandingPage() {
             </section>
 
             {/* How it works */}
-            <section style={{ padding: '80px 24px', position: 'relative', zIndex: 10 }}>
-                <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-                    <div className="badge badge-indigo" style={{ marginBottom: 16 }}>How it works</div>
+            <section style={{ padding: '120px 24px', position: 'relative', zIndex: 10 }}>
+                <div style={{ maxWidth: 1000, margin: '0 auto', textAlign: 'center' }}>
+                    <div className="badge badge-indigo" style={{ marginBottom: 20, padding: '6px 16px' }}>Workflow</div>
                     <h2 style={{
-                        fontFamily: 'Outfit, sans-serif', fontWeight: 800,
-                        fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#f1f5f9',
-                        letterSpacing: '-0.03em', marginBottom: 56,
+                        fontFamily: 'Outfit, sans-serif', fontWeight: 900,
+                        fontSize: 'clamp(2.5rem, 6vw, 4rem)', color: 'var(--text-color)',
+                        letterSpacing: '-0.04em', marginBottom: 80, lineHeight: 1.1,
                     }}>
-                        From Topic to Course in 4 Steps
+                        Your Learning Journey <br /> in <span className="gradient-text">4 Simple Steps</span>
                     </h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 24 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32 }}>
                         {steps.map((s, i) => (
-                            <div key={i} className="glass" style={{ padding: 28, textAlign: 'left', position: 'relative' }}>
+                            <div key={i} className="glass" style={{
+                                padding: 40, textAlign: 'center', position: 'relative', borderRadius: 28,
+                                background: 'var(--glass-bg)',
+                                borderColor: 'var(--glass-border)'
+                            }}>
                                 <div style={{
-                                    fontFamily: 'Outfit, sans-serif', fontSize: 42, fontWeight: 900,
-                                    color: 'white', lineHeight: 1, marginBottom: 12,
+                                    width: 64, height: 64, borderRadius: 20, marginBottom: 24,
+                                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 32, color: 'white', margin: '0 auto',
+                                    boxShadow: '0 8px 30px rgba(99,102,241,0.3)',
+                                    position: 'relative', zIndex: 2
+                                }}>
+                                    <span>{['🔑', '✍️', '🏗️', '🎓'][i]}</span>
+                                </div>
+                                <div style={{
+                                    fontFamily: 'Outfit, sans-serif', fontSize: 64, fontWeight: 900,
+                                    color: 'var(--text-color)', opacity: 0.05, lineHeight: 1, position: 'absolute', top: 20, left: 20, zIndex: 0,
                                 }}>{s.num}</div>
-                                <h4 style={{ fontWeight: 700, fontSize: 16, color: '#f1f5f9', marginBottom: 8 }}>{s.title}</h4>
-                                <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.6 }}>{s.desc}</p>
-                                {i < steps.length - 1 && (
-                                    <div style={{
-                                        display: 'none', // hide on small screens; CSS grid handles layout
-                                    }} />
-                                )}
+                                <h4 style={{ fontWeight: 800, fontSize: 20, color: 'var(--text-color)', marginBottom: 12, position: 'relative', zIndex: 1 }}>{s.title}</h4>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6, position: 'relative', zIndex: 1 }}>{s.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -226,41 +321,51 @@ export default function LandingPage() {
             </section>
 
             {/* CTA Banner */}
-            <section style={{ padding: '80px 24px 120px', position: 'relative', zIndex: 10 }}>
+            <section style={{ padding: '100px 24px 160px', position: 'relative', zIndex: 10 }}>
                 <div className="glass" style={{
-                    maxWidth: 760, margin: '0 auto', padding: '60px 48px', textAlign: 'center',
-                    background: 'rgba(99, 102, 241, 0.08)',
-                    borderColor: 'rgba(99, 102, 241, 0.25)',
-                    boxShadow: '0 0 80px rgba(99, 102, 241, 0.12)',
+                    maxWidth: 1000, margin: '0 auto', padding: '100px 60px', textAlign: 'center',
+                    background: 'radial-gradient(circle at top left, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.05))',
+                    borderColor: 'rgba(99, 102, 241, 0.4)',
+                    boxShadow: '0 0 120px rgba(99, 102, 241, 0.2)',
+                    borderRadius: 40
                 }}>
                     <h2 style={{
                         fontFamily: 'Outfit, sans-serif', fontWeight: 900,
-                        fontSize: 'clamp(1.6rem, 4vw, 2.5rem)', color: '#f1f5f9',
-                        letterSpacing: '-0.03em', marginBottom: 16,
+                        fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', color: 'var(--text-color)',
+                        letterSpacing: '-0.05em', marginBottom: 24, lineHeight: 1.05
                     }}>
-                        Ready to learn smarter?
+                        Stop Wondering. <br /> Start Mastering.
                     </h2>
-                    <p style={{ color: '#94a3b8', marginBottom: 32, fontSize: 16 }}>
-                        Join now and generate your first AI course in under 30 seconds.
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: 56, fontSize: 'clamp(1rem, 2vw, 1.25rem)', maxWidth: 600, margin: '0 auto 56px' }}>
+                        Your journey from curiosity to expertise is only one click away. Join thousands learning smarter with AI.
                     </p>
                     <button
                         className="btn-primary"
-                        style={{ fontSize: 17, padding: '15px 40px', borderRadius: 14 }}
+                        style={{ fontSize: 20, padding: '20px 64px', borderRadius: 20 }}
                         onClick={() => loginWithRedirect()}
                     >
-                        🚀 Get Started — It's Free
+                        🚀 Launch Your Future
                     </button>
+                    <p style={{ marginTop: 24, color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, opacity: 0.8 }}>
+                        Free forever for individual learners. No credit card required.
+                    </p>
                 </div>
             </section>
 
             {/* Footer */}
             <footer style={{
-                borderTop: '1px solid rgba(255,255,255,0.06)',
-                padding: '24px 48px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#475569', fontSize: 13, position: 'relative', zIndex: 10,
+                borderTop: '1px solid var(--sidebar-border)',
+                padding: '48px 48px',
+                textAlign: 'center',
+                color: 'var(--text-secondary)', fontSize: 14, position: 'relative', zIndex: 10,
+                display: 'flex', flexDirection: 'column', gap: 16
             }}>
-                <span>© 2026 Text-to-Learn · Built for Hackathon 🚀</span>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 8 }}>
+                    <span style={{ cursor: 'pointer' }}>Twitter</span>
+                    <span style={{ cursor: 'pointer' }}>Discord</span>
+                    <span style={{ cursor: 'pointer' }}>GitHub</span>
+                </div>
+                <span>© 2026 Text-to-Learn · Built by <a href="https://github.com/PushkarWaykole" target="_blank" style={{ color: 'inherit', fontWeight: 600 }}>Pushkar</a></span>
             </footer>
         </div>
     );

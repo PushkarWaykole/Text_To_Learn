@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import protectedRoutes from './routes/protectedRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
+import audioRoutes from './routes/audioRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -45,6 +46,7 @@ app.get('/', (req, res) => {
 // ── API Routes ─────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/audio', audioRoutes);
 app.use('/api', protectedRoutes);
 
 // ── Global Error Handler ───────────────────────────────────────────────────

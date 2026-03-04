@@ -12,20 +12,48 @@ const SAMPLE_TOPICS = [
     'Data Structures & Algorithms',
 ];
 
+const FUN_MESSAGES = [
+    "Cooking the modules... 👨‍🍳",
+    "Seasoning the curriculum... 🧂",
+    "Sprinkling some AI magic... ✨",
+    "Consulting the digital oracles... 🔮",
+    "Baking the perfect lesson plan... 🥧",
+    "Aligning the pedagogical stars... 🌌",
+    "Teaching the AI some new tricks... 🤖",
+    "Brewing a fresh pot of wisdom... ☕",
+    "Hyper-threading the knowledge... 🧵",
+    "Almost there! Knowledge is power... ⚡"
+];
+
 export default function HomePage() {
     const { user } = useAuth0();
     const navigate = useNavigate();
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
     const [coursesCount, setCoursesCount] = useState(0);
+    const [lessonsCompleted, setLessonsCompleted] = useState(0);
+    const [msgIndex, setMsgIndex] = useState(0);
+
+    useEffect(() => {
+        let interval;
+        if (isGenerating) {
+            interval = setInterval(() => {
+                setMsgIndex((prev) => (prev + 1) % FUN_MESSAGES.length);
+            }, 2800);
+        } else {
+            setMsgIndex(0);
+        }
+        return () => clearInterval(interval);
+    }, [isGenerating]);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await axiosInstance.get('/api/courses');
-                setCoursesCount(res.data.length);
+                const res = await axiosInstance.get('/api/courses/stats');
+                setCoursesCount(res.data.coursesCreated);
+                setLessonsCompleted(res.data.lessonsCompleted);
             } catch (error) {
-                console.error("Failed to fetch courses count:", error);
+                console.error("Failed to fetch stats:", error);
             }
         };
         fetchStats();
@@ -53,7 +81,7 @@ export default function HomePage() {
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
+        <div style={{ display: 'flex', minHeight: '100vh' }}>
             <Sidebar />
 
             {/* Main content */}
@@ -68,15 +96,15 @@ export default function HomePage() {
 
                 {/* Header greeting */}
                 <div className="fade-up" style={{ marginBottom: 40 }}>
-                    <p style={{ color: '#64748b', fontSize: 14, marginBottom: 4 }}>{greeting},</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 4 }}>{greeting},</p>
                     <h1 style={{
                         fontFamily: 'Outfit, sans-serif', fontWeight: 800,
-                        fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', color: '#f1f5f9',
+                        fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', color: 'var(--text-color)',
                         letterSpacing: '-0.03em', lineHeight: 1.1,
                     }}>
                         {firstName} 👋
                     </h1>
-                    <p style={{ color: '#475569', marginTop: 6, fontSize: 15 }}>
+                    <p style={{ color: 'var(--text-secondary)', marginTop: 6, fontSize: 15 }}>
                         What do you want to learn today?
                     </p>
                 </div>
@@ -84,16 +112,16 @@ export default function HomePage() {
                 {/* Generate Course Card */}
                 <div className="fade-up fade-up-1 glass" style={{
                     padding: '36px 40px', marginBottom: 40,
-                    borderColor: 'rgba(99,102,241,0.2)',
+                    borderColor: 'var(--glass-border)',
                     boxShadow: '0 0 60px rgba(99,102,241,0.08)',
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                         <span style={{ fontSize: 22 }}>✨</span>
-                        <h2 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 20, color: '#f1f5f9' }}>
+                        <h2 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--text-color)' }}>
                             Generate a New Course
                         </h2>
                     </div>
-                    <p style={{ color: '#64748b', fontSize: 14, marginBottom: 24 }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 24 }}>
                         Type any topic below and AI will build a full structured course for you.
                     </p>
 
@@ -112,30 +140,25 @@ export default function HomePage() {
                             style={{ whiteSpace: 'nowrap', minWidth: 140 }}
                             disabled={isGenerating || !prompt.trim()}
                         >
-                            {isGenerating ? (
-                                <span style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center' }}>
-                                    <div className="w-4 h-4 rounded-full border-2 border-slate-300 border-t-white animate-spin"></div>
-                                    Generating…
-                                </span>
-                            ) : '🚀 Generate'}
+                            🚀 Generate
                         </button>
                     </form>
 
                     {/* Quick topic suggestions */}
                     <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        <span style={{ fontSize: 12, color: '#475569', alignSelf: 'center' }}>Try:</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)', alignSelf: 'center' }}>Try:</span>
                         {SAMPLE_TOPICS.map((topic) => (
                             <button
                                 key={topic}
                                 onClick={() => setPrompt(topic)}
                                 style={{
-                                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                                    borderRadius: 999, padding: '4px 12px', fontSize: 12, color: '#94a3b8',
+                                    background: 'var(--input-bg)', border: '1px solid var(--input-border)',
+                                    borderRadius: 999, padding: '4px 12px', fontSize: 12, color: 'var(--text-secondary)',
                                     cursor: 'pointer', transition: 'all 0.2s',
                                     fontFamily: 'Inter, sans-serif',
                                 }}
-                                onMouseEnter={e => { e.target.style.borderColor = 'rgba(99,102,241,0.4)'; e.target.style.color = '#a5b4fc'; }}
-                                onMouseLeave={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.color = '#94a3b8'; }}
+                                onMouseEnter={e => { e.target.style.borderColor = 'rgba(99,102,241,0.4)'; e.target.style.color = 'var(--text-color)'; }}
+                                onMouseLeave={e => { e.target.style.borderColor = 'var(--input-border)'; e.target.style.color = 'var(--text-secondary)'; }}
                             >
                                 {topic}
                             </button>
@@ -144,11 +167,10 @@ export default function HomePage() {
                 </div>
 
                 {/* Stats row */}
-                <div className="fade-up fade-up-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 40 }}>
+                <div className="fade-up fade-up-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20, marginBottom: 40, maxWidth: 800 }}>
                     {[
                         { label: 'Courses Created', value: coursesCount.toString(), icon: '📚', color: '#6366f1' },
-                        { label: 'Lessons Completed', value: '0', icon: '✅', color: '#10b981' },
-                        { label: 'PDFs Exported', value: '0', icon: '📄', color: '#f59e0b' },
+                        { label: 'Lessons Completed', value: lessonsCompleted.toString(), icon: '✅', color: '#10b981' },
                     ].map((stat) => (
                         <div key={stat.label} className="glass glass-hover" style={{ padding: '24px 28px' }}>
                             <div style={{ fontSize: 28, marginBottom: 8 }}>{stat.icon}</div>
@@ -156,11 +178,113 @@ export default function HomePage() {
                                 fontFamily: 'Outfit, sans-serif', fontSize: 32, fontWeight: 800,
                                 color: stat.color, lineHeight: 1,
                             }}>{stat.value}</div>
-                            <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>{stat.label}</div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>{stat.label}</div>
                         </div>
                     ))}
                 </div>
+
+                {/* New Content: Daily Insight & Exploration */}
+                <div className="fade-up fade-up-3" style={{ display: 'flex', flexDirection: 'column', gap: 32, width: '100%' }}>
+
+                    {/* Daily Insight */}
+                    <div className="glass" style={{ padding: 32, position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: -20, right: -20, fontSize: 80, opacity: 0.05, transform: 'rotate(15deg)' }}>💡</div>
+                        <h3 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 18, color: 'var(--text-color)', marginBottom: 16 }}>
+                            Daily Learning Insight
+                        </h3>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6, fontStyle: 'italic' }}>
+                            "The beautiful thing about learning is that no one can take it away from you."
+                        </p>
+                        <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8', fontSize: 14 }}>🎯</div>
+                            <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>Tip: Try generating courses on interdisciplinary topics for unique AI insights.</span>
+                        </div>
+                    </div>
+
+                    {/* Explore Categories (Full Width Grid) */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+                        {[
+                            { label: 'Web Dev', icon: '💻', topic: 'Next.js and Tailwind CSS' },
+                            { label: 'Space', icon: '🚀', topic: 'The James Webb Telescope' },
+                            { label: 'Biology', icon: '🧬', topic: 'CRISPR Gene Editing' },
+                            { label: 'Art', icon: '🎨', topic: 'Impressionist Movement' },
+                        ].map(cat => (
+                            <button
+                                key={cat.label}
+                                onClick={() => setPrompt(cat.topic)}
+                                className="glass-hover"
+                                style={{
+                                    background: 'rgba(255,255,255,0.02)',
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    borderRadius: 24,
+                                    padding: '32px 24px',
+                                    textAlign: 'center',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <div style={{ fontSize: 32, marginBottom: 12 }}>{cat.icon}</div>
+                                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-color)' }}>{cat.label}</div>
+                                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>Explore Courses</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="fade-up fade-up-4" style={{ marginTop: 60, padding: '40px', borderTop: '1px solid var(--sidebar-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h4 style={{ color: 'var(--text-color)', fontWeight: 700, marginBottom: 4 }}>Ready for a challenge?</h4>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Select a trending topic and push your boundaries.</p>
+                    </div>
+                    <button className="btn-ghost" onClick={() => setPrompt('Quantum Cryptography Basics')}>
+                        Surprise Me 🎲
+                    </button>
+                </div>
+
+                {/* Loading Overlay */}
+                {/* Loading Overlay */}
+                {isGenerating && (
+                    <div style={{
+                        position: 'fixed', inset: 0, background: 'var(--bg-color)', opacity: 0.95,
+                        backdropFilter: 'blur(12px)', zIndex: 9999,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                        <div className="glass" style={{
+                            padding: '48px 64px', textAlign: 'center', maxWidth: 450,
+                            borderColor: 'var(--glass-border)',
+                            transform: 'scale(1.1)', boxShadow: '0 0 100px rgba(99,102,241,0.2)'
+                        }}>
+                            <div style={{ marginBottom: 32, position: 'relative' }}>
+                                <div className="animate-spin" style={{
+                                    width: 80, height: 80, borderRadius: '50%',
+                                    border: '4px solid var(--glass-border)',
+                                    borderTopColor: 'var(--color-primary-500)', margin: '0 auto'
+                                }}></div>
+                                <span style={{
+                                    position: 'absolute', top: '50%', left: '50%',
+                                    transform: 'translate(-50%, -50%)', fontSize: 32
+                                }}>🎓</span>
+                            </div>
+
+                            <h2 style={{
+                                fontFamily: 'Outfit, sans-serif', fontSize: 24, fontWeight: 800,
+                                color: 'var(--text-color)', marginBottom: 12, letterSpacing: '-0.02em'
+                            }}>
+                                Building your course...
+                            </h2>
+
+                            <p style={{
+                                color: 'var(--text-secondary)', fontSize: 18, fontWeight: 500,
+                                minHeight: '1.5em', transition: 'all 0.5s ease-in-out'
+                            }}>
+                                {FUN_MESSAGES[msgIndex]}
+                            </p>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
 }
+
+

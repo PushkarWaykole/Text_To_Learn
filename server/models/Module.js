@@ -33,6 +33,10 @@ const moduleSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        pdfData: {
+            type: Buffer,
+            default: null,
+        },
         isDeleted: {
             type: Boolean,
             default: false,

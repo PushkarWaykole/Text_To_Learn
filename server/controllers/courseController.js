@@ -2,6 +2,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import Course from '../models/Course.js';
 import Module from '../models/Module.js';
 import User from '../models/User.js';
+import VideoCache from '../models/VideoCache.js';
+import ytSearch from 'yt-search';
+import UserProgress from '../models/UserProgress.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -23,28 +26,50 @@ Content block examples:
 2. {"type": "paragraph", "text": "Detailed explanation..."}
 3. {"type": "code", "language": "javascript", "code": "console.log('hi');"}
 4. {"type": "mcq", "question": "What is X?", "options": ["A", "B", "C", "D"], "answer": "B"}
-5. {"type": "videoSearch", "searchQuery": "Best short tutorial video for exactly this specific topic"}
+5. {"type": "videoSearch", "searchQuery": "Best short tutorial video for exactly this specific topic", "description": "Quick context explaining what this video covers..."}
 
 Rules:
 - Give at least 3 content blocks per module. Include at least 1 "videoSearch" block per module!
 - Keep paragraphs concise but educational.
+- For every videoSearch block, provide a brief 'description' explaining what the video is about.
 - Ensure the JSON is 100% valid and parseable.
+- Modules must follow a clear logical progression from beginner to advanced topics.
 - ONLY output the JSON array, no conversational text.
 `;
 
-import ytSearch from 'yt-search';
-
 const fetchYoutubeVideoUrl = async (query) => {
     try {
-        const result = await ytSearch(query);
-        // Safely extract the first video matching our target keywords
+        const normalizedQuery = query.toLowerCase().trim();
+
+        // 1. Check local DB cache first
+        const cached = await VideoCache.findOne({ searchQuery: normalizedQuery });
+        if (cached) {
+            console.log(`[Cache Hit] Video for: ${normalizedQuery}`);
+            return cached.videoUrl;
+        }
+
+        console.log(`[Cache Miss] Searching YT for: ${normalizedQuery}`);
+        const result = await ytSearch(normalizedQuery);
         const firstVideo = result?.videos?.[0];
 
+        let videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ'; // default fallback
+
         if (firstVideo && firstVideo.videoId) {
-            return `https://www.youtube.com/embed/${firstVideo.videoId}`;
+            videoUrl = `https://www.youtube.com/embed/${firstVideo.videoId}`;
+
+            // 2. Save result to cache for future users
+            try {
+                await VideoCache.create({
+                    searchQuery: normalizedQuery,
+                    videoUrl
+                });
+            } catch (cacheErr) {
+                console.error('Cache save error:', cacheErr.message);
+            }
         }
-        // Fallback default placeholder if no video returned by search
-        return 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+
+        return videoUrl;
+
     } catch (err) {
         console.error('yt-search Error:', err.message);
         return 'https://www.youtube.com/embed/dQw4w9WgXcQ';
@@ -62,13 +87,28 @@ export const generateCourse = async (req, res, next) => {
         if (!user) return res.status(404).json({ error: "User not found. Please sync." });
 
         if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ error: "GEMINI_API_KEY is missing on server." });
+            console.error("GEMINI_API_KEY is undefined in process.env");
+            return res.status(500).json({ error: "GEMINI_API_KEY is missing. Did you restart the server?" });
         }
 
-        // 1. Call Gemini
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // Fast and cheap
-        const result = await model.generateContent(generateCoursePrompt(topic));
-        const textResponse = result.response.text();
+        // Masked log for debugging
+
+
+        // 1. Call Gemini - Reverting to 2.5-flash which worked in earlier runs
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        let textResponse;
+        try {
+            const result = await model.generateContent(generateCoursePrompt(topic));
+            textResponse = result.response.text();
+            console.log("[AI] Response received successfully");
+        } catch (aiErr) {
+            console.error("Gemini API Error:", aiErr);
+            return res.status(500).json({
+                error: `Gemini API Error: ${aiErr.message}. If you just added the key, restart your server.`,
+                details: aiErr.message
+            });
+        }
 
         // 2. Parse AI response safely
         let modulesData;
@@ -105,15 +145,16 @@ export const generateCourse = async (req, res, next) => {
                     const videoUrl = await fetchYoutubeVideoUrl(block.searchQuery);
                     mod.content[j] = {
                         type: 'video',
-                        url: videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ' // fallback
+                        url: videoUrl,
+                        description: block.description || ''
                     };
                 }
             }
 
             const moduleDoc = new Module({
                 course: course._id,
-                title: mod.title,
-                order: mod.order !== undefined ? mod.order : i,
+                title: mod.title, // User AI Title
+                order: i, // Force sequential order to avoid AI confusion
                 content: mod.content,
             });
             await moduleDoc.save();
@@ -139,7 +180,7 @@ export const getMyCourses = async (req, res, next) => {
         const user = await User.findOne({ auth0Id });
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        const courses = await Course.find({ creator: user._id, isDeleted: false })
+        const courses = await Course.find({ creator: user._id, isDeleted: { $ne: true } })
             .sort({ createdAt: -1 })
             .populate('modules');
 
@@ -157,12 +198,118 @@ export const getCourseById = async (req, res, next) => {
 
         if (!user) return res.status(404).json({ error: "User not found" });
 
-        const course = await Course.findOne({ _id: courseId, creator: user._id, isDeleted: false })
+        const course = await Course.findOne({ _id: courseId, creator: user._id, isDeleted: { $ne: true } })
             .populate('modules');
 
         if (!course) return res.status(404).json({ error: "Course not found" });
 
-        res.json(course);
+        // Fetch progress to see which modules are completed
+        const progress = await UserProgress.findOne({ user: user._id, course: courseId });
+
+        res.json({
+            ...course.toObject(),
+            completedModules: progress ? progress.completedModules : [],
+            quizChoices: progress ? progress.quizChoices : []
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const getUserStats = async (req, res, next) => {
+    try {
+        const auth0Id = req.auth?.payload?.sub;
+        const user = await User.findOne({ auth0Id });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        const coursesCount = await Course.countDocuments({ creator: user._id, isDeleted: { $ne: true } });
+
+        const progressDocs = await UserProgress.find({ user: user._id });
+        let totalCompletedLessons = 0;
+        progressDocs.forEach(p => {
+            totalCompletedLessons += p.completedModules.length;
+        });
+
+        res.json({
+            coursesCreated: coursesCount,
+            lessonsCompleted: totalCompletedLessons
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const completeModule = async (req, res, next) => {
+    try {
+        const { courseId, moduleId } = req.params;
+        const auth0Id = req.auth?.payload?.sub;
+        const user = await User.findOne({ auth0Id });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        let progress = await UserProgress.findOne({ user: user._id, course: courseId });
+        if (!progress) {
+            progress = new UserProgress({ user: user._id, course: courseId, completedModules: [], quizChoices: [] });
+        }
+
+        if (!progress.completedModules.includes(moduleId)) {
+            progress.completedModules.push(moduleId);
+            await progress.save();
+        }
+
+        res.json(progress);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const saveQuizChoice = async (req, res, next) => {
+    try {
+        const { courseId, moduleId } = req.params;
+        const { questionIndex, selectedOption } = req.body;
+        const auth0Id = req.auth?.payload?.sub;
+        const user = await User.findOne({ auth0Id });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        let progress = await UserProgress.findOne({ user: user._id, course: courseId });
+        if (!progress) {
+            progress = new UserProgress({ user: user._id, course: courseId, completedModules: [], quizChoices: [] });
+        }
+
+        // Find if this question was already answered
+        const choiceIdx = progress.quizChoices.findIndex(
+            c => c.moduleId.toString() === moduleId && c.questionIndex === questionIndex
+        );
+
+        if (choiceIdx > -1) {
+            progress.quizChoices[choiceIdx].selectedOption = selectedOption;
+        } else {
+            progress.quizChoices.push({ moduleId, questionIndex, selectedOption });
+        }
+
+        await progress.save();
+        res.json(progress);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const resetQuizChoice = async (req, res, next) => {
+    try {
+        const { courseId, moduleId } = req.params;
+        const { questionIndex } = req.body; // Index of the quiz block in the module
+        const auth0Id = req.auth?.payload?.sub;
+        const user = await User.findOne({ auth0Id });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        let progress = await UserProgress.findOne({ user: user._id, course: courseId });
+        if (progress) {
+            progress.quizChoices = progress.quizChoices.filter(
+                c => !(c.moduleId.toString() === moduleId && c.questionIndex === questionIndex)
+            );
+            await progress.save();
+        }
+
+        res.json(progress || { quizChoices: [] });
     } catch (err) {
         next(err);
     }
