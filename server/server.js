@@ -1,15 +1,14 @@
+import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 
 import protectedRoutes from './routes/protectedRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-
-dotenv.config();
+import courseRoutes from './routes/courseRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -45,6 +44,7 @@ app.get('/', (req, res) => {
 
 // ── API Routes ─────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/api/courses', courseRoutes);
 app.use('/api', protectedRoutes);
 
 // ── Global Error Handler ───────────────────────────────────────────────────

@@ -1,9 +1,13 @@
 import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import { setupAxiosInterceptors } from './utils/axiosInstance';
 import axiosInstance from './utils/axiosInstance';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
+import CoursePage from './pages/CoursePage';
+import CoursesPage from './pages/CoursesPage';
+import DownloadsPage from './pages/DownloadsPage';
 
 // Full-screen loading screen shown while Auth0 initialises
 function LoadingScreen() {
@@ -60,6 +64,22 @@ export default function App() {
   // Show spinner while Auth0 SDK is initialising
   if (isLoading) return <LoadingScreen />;
 
-  // Route: show landing page for guests, dashboard for authenticated users
-  return isAuthenticated ? <HomePage /> : <LandingPage />;
+  return (
+    <BrowserRouter>
+      {!isAuthenticated ? (
+        <Routes>
+          <Route path="*" element={<LandingPage />} />
+        </Routes>
+      ) : (
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/downloads" element={<DownloadsPage />} />
+          <Route path="/course/:courseId" element={<CoursePage />} />
+          <Route path="/course/:courseId/module/:moduleId" element={<CoursePage />} />
+          <Route path="*" element={<HomePage />} />
+        </Routes>
+      )}
+    </BrowserRouter>
+  );
 }

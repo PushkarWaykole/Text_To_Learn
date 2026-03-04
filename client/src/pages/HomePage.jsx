@@ -1,12 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-
-const NAV_ITEMS = [
-    { icon: '🏠', label: 'Dashboard', id: 'dashboard' },
-    { icon: '📚', label: 'My Courses', id: 'courses' },
-    { icon: '✨', label: 'Generate', id: 'generate' },
-    { icon: '📥', label: 'Downloads', id: 'downloads' },
-];
+import { useNavigate, Link } from 'react-router-dom';
+import axiosInstance from '../utils/axiosInstance';
+import Sidebar from '../components/Sidebar';
 
 const SAMPLE_TOPICS = [
     'Introduction to Machine Learning',
@@ -17,17 +13,39 @@ const SAMPLE_TOPICS = [
 ];
 
 export default function HomePage() {
-    const { user, logout } = useAuth0();
+    const { user } = useAuth0();
+    const navigate = useNavigate();
     const [prompt, setPrompt] = useState('');
-    const [activeNav, setActiveNav] = useState('dashboard');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [coursesCount, setCoursesCount] = useState(0);
 
-    const handleGenerate = (e) => {
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await axiosInstance.get('/api/courses');
+                setCoursesCount(res.data.length);
+            } catch (error) {
+                console.error("Failed to fetch courses count:", error);
+            }
+        };
+        fetchStats();
+    }, []);
+
+    const handleGenerate = async (e) => {
         e.preventDefault();
         if (!prompt.trim()) return;
         setIsGenerating(true);
-        // Milestone 8 will wire up the real API call
-        setTimeout(() => setIsGenerating(false), 2000);
+        try {
+            const res = await axiosInstance.post('/api/courses/generate', { topic: prompt });
+            if (res.data._id) {
+                navigate(`/course/${res.data._id}`);
+            }
+        } catch (error) {
+            console.error("Generation failed:", error);
+            alert(`Error generating course: ${error.response?.data?.error || error.message}. \nIf you just added your GEMINI_API_KEY to server/.env, you MUST manually restart the backend server (nodemon) so the .env file gets reloaded!`);
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const firstName = user?.name?.split(' ')[0] || 'there';
@@ -36,65 +54,7 @@ export default function HomePage() {
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0f' }}>
-
-            {/* Sidebar */}
-            <aside className="sidebar">
-                {/* Logo */}
-                <div style={{ padding: '0 8px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 20 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ fontSize: 22 }}>🧠</span>
-                        <span style={{
-                            fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 17,
-                            color: '#f1f5f9', letterSpacing: '-0.02em',
-                        }}>
-                            Text<span className="gradient-text">-to-Learn</span>
-                        </span>
-                    </div>
-                </div>
-
-                {/* Nav */}
-                <nav style={{ flex: 1 }}>
-                    {NAV_ITEMS.map((item) => (
-                        <button
-                            key={item.id}
-                            className={`sidebar-link ${activeNav === item.id ? 'active' : ''}`}
-                            onClick={() => setActiveNav(item.id)}
-                        >
-                            <span style={{ fontSize: 16 }}>{item.icon}</span>
-                            {item.label}
-                        </button>
-                    ))}
-                </nav>
-
-                {/* User profile at bottom */}
-                <div style={{
-                    borderTop: '1px solid rgba(255,255,255,0.06)',
-                    paddingTop: 16, marginTop: 16,
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10 }}>
-                        <img
-                            src={user?.picture}
-                            alt={user?.name}
-                            style={{ width: 34, height: 34, borderRadius: '50%', border: '2px solid rgba(99,102,241,0.5)' }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {user?.name}
-                            </div>
-                            <div style={{ fontSize: 11, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {user?.email}
-                            </div>
-                        </div>
-                    </div>
-                    <button
-                        className="sidebar-link"
-                        style={{ marginTop: 4, color: '#ef4444' }}
-                        onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
-                    >
-                        <span>🚪</span> Sign Out
-                    </button>
-                </div>
-            </aside>
+            <Sidebar />
 
             {/* Main content */}
             <main style={{ marginLeft: 240, flex: 1, padding: '40px 48px', position: 'relative', overflow: 'hidden' }}>
@@ -153,12 +113,8 @@ export default function HomePage() {
                             disabled={isGenerating || !prompt.trim()}
                         >
                             {isGenerating ? (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{
-                                        width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)',
-                                        borderTop: '2px solid white', borderRadius: '50%',
-                                        animation: 'spin 0.8s linear infinite', display: 'inline-block',
-                                    }} />
+                                <span style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'center' }}>
+                                    <div className="w-4 h-4 rounded-full border-2 border-slate-300 border-t-white animate-spin"></div>
                                     Generating…
                                 </span>
                             ) : '🚀 Generate'}
@@ -190,7 +146,7 @@ export default function HomePage() {
                 {/* Stats row */}
                 <div className="fade-up fade-up-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 40 }}>
                     {[
-                        { label: 'Courses Created', value: '0', icon: '📚', color: '#6366f1' },
+                        { label: 'Courses Created', value: coursesCount.toString(), icon: '📚', color: '#6366f1' },
                         { label: 'Lessons Completed', value: '0', icon: '✅', color: '#10b981' },
                         { label: 'PDFs Exported', value: '0', icon: '📄', color: '#f59e0b' },
                     ].map((stat) => (
@@ -204,44 +160,7 @@ export default function HomePage() {
                         </div>
                     ))}
                 </div>
-
-                {/* My Courses — Empty State */}
-                <div className="fade-up fade-up-3">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                        <h2 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 18, color: '#f1f5f9' }}>
-                            My Courses
-                        </h2>
-                        <span className="badge badge-indigo">0 courses</span>
-                    </div>
-
-                    {/* Empty state */}
-                    <div className="glass" style={{
-                        padding: '60px 40px', textAlign: 'center',
-                        borderStyle: 'dashed', borderColor: 'rgba(99,102,241,0.2)',
-                    }}>
-                        <div style={{ fontSize: 56, marginBottom: 16 }}>🎓</div>
-                        <h3 style={{ fontWeight: 700, fontSize: 18, color: '#f1f5f9', marginBottom: 8 }}>
-                            No courses yet
-                        </h3>
-                        <p style={{ color: '#64748b', fontSize: 14, maxWidth: 340, margin: '0 auto 24px' }}>
-                            Generate your first AI-powered course above. It takes less than 30 seconds!
-                        </p>
-                        <button
-                            className="btn-primary"
-                            onClick={() => {
-                                setActiveNav('generate');
-                                document.querySelector('.input-dark')?.focus();
-                            }}
-                        >
-                            ✨ Create First Course
-                        </button>
-                    </div>
-                </div>
-
             </main>
-
-            {/* Spin keyframe inline */}
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 }

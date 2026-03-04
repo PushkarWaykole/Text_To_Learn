@@ -210,7 +210,7 @@ export default function LandingPage() {
                             <div key={i} className="glass" style={{ padding: 28, textAlign: 'left', position: 'relative' }}>
                                 <div style={{
                                     fontFamily: 'Outfit, sans-serif', fontSize: 42, fontWeight: 900,
-                                    color: 'rgba(99, 102, 241, 0.2)', lineHeight: 1, marginBottom: 12,
+                                    color: 'white', lineHeight: 1, marginBottom: 12,
                                 }}>{s.num}</div>
                                 <h4 style={{ fontWeight: 700, fontSize: 16, color: '#f1f5f9', marginBottom: 8 }}>{s.title}</h4>
                                 <p style={{ color: '#64748b', fontSize: 13, lineHeight: 1.6 }}>{s.desc}</p>
