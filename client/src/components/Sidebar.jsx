@@ -8,7 +8,7 @@ const NAV_ITEMS = [
     { icon: '📚', label: 'My Courses', path: '/courses' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen = false, onClose = () => { } } = {}) {
     const { user, logout } = useAuth0();
     const location = useLocation();
     const [recentCourses, setRecentCourses] = useState([]);
@@ -16,6 +16,15 @@ export default function Sidebar() {
         const saved = localStorage.getItem('theme');
         return saved ? saved === 'dark' : true; // Default to dark mode
     });
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (isDarkMode) {
@@ -33,8 +42,7 @@ export default function Sidebar() {
         const fetchRecent = async () => {
             try {
                 const res = await axiosInstance.get('/api/courses');
-                // Removed slice to show all courses
-                setRecentCourses(res.data);
+                setRecentCourses(res.data.slice(0, 5));
             } catch (err) {
                 console.error("Failed to fetch recent courses", err);
             }
@@ -43,9 +51,15 @@ export default function Sidebar() {
     }, []);
 
     return (
-        <aside className="sidebar z-50">
-            {/* Logo */}
-            <div style={{ padding: '0 8px 28px', borderBottom: '1px solid var(--sidebar-border)', marginBottom: 20 }}>
+        <>
+            <div
+                className={`sidebar-backdrop ${isOpen ? 'sidebar-backdrop-show' : ''}`}
+                onClick={onClose}
+                aria-hidden={!isOpen}
+            />
+            <aside className={`sidebar z-50 ${isOpen ? 'sidebar-open' : ''}`}>
+            {/* Logo (hidden on mobile so only nav items show; navbar keeps the brand) */}
+            <div className="sidebar-logo" style={{ padding: '0 8px 28px', borderBottom: '1px solid var(--sidebar-border)', marginBottom: 20 }}>
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
                     <span style={{ fontSize: 22 }}>🧠</span>
                     <span style={{
@@ -58,7 +72,7 @@ export default function Sidebar() {
             </div>
 
             {/* Nav */}
-            <nav style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }} className="custom-scrollbar">
+            <nav style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }} className="custom-scrollbar sidebar-nav-wrap">
                 <div style={{ flexShrink: 0 }}>
                     {NAV_ITEMS.map((item) => {
                         const isActive = location.pathname === item.path;
@@ -68,6 +82,7 @@ export default function Sidebar() {
                                 to={item.path}
                                 className={`sidebar-link ${isActive ? 'active' : ''}`}
                                 style={{ display: 'flex', textDecoration: 'none' }}
+                                onClick={onClose}
                             >
                                 <span style={{ fontSize: 16 }}>{item.icon}</span>
                                 {item.label}
@@ -95,6 +110,7 @@ export default function Sidebar() {
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis'
                                     }}
+                                    onClick={onClose}
                                 >
                                     <span className="text-xs mr-2">▪</span> {course.topic || course.title}
                                 </Link>
@@ -142,6 +158,7 @@ export default function Sidebar() {
                     <span>🚪</span> Sign Out
                 </button>
             </div>
-        </aside>
+            </aside>
+        </>
     );
 }

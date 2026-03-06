@@ -28,8 +28,10 @@ const FUN_MESSAGES = [
 export default function HomePage() {
     const { user } = useAuth0();
     const navigate = useNavigate();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [prompt, setPrompt] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [popup, setPopup] = useState(null);
     const [coursesCount, setCoursesCount] = useState(0);
     const [lessonsCompleted, setLessonsCompleted] = useState(0);
     const [msgIndex, setMsgIndex] = useState(0);
@@ -70,7 +72,27 @@ export default function HomePage() {
             }
         } catch (error) {
             console.error("Generation failed:", error);
-            alert(`Error generating course: ${error.response?.data?.error || error.message}. \nIf you just added your GEMINI_API_KEY to server/.env, you MUST manually restart the backend server (nodemon) so the .env file gets reloaded!`);
+            const status = error?.response?.status;
+            const serverMsg = error?.response?.data?.error;
+
+            if (status === 403 && typeof serverMsg === 'string' && serverMsg.toLowerCase().includes('course limit')) {
+                setPopup({
+                    title: "Course limit reached",
+                    message:
+                        "This is a small hobby project (built with love, not a big budget). To keep the servers happy and the AI bill from sprinting away, each account can create up to 5 courses.",
+                    primaryLabel: "Go to My Courses",
+                    primaryAction: () => navigate('/courses'),
+                    secondaryLabel: "Got it",
+                    secondaryAction: () => setPopup(null),
+                });
+            } else {
+                setPopup({
+                    title: "Couldn’t generate the course",
+                    message: serverMsg || error.message || "Something went wrong. Please try again.",
+                    primaryLabel: "Close",
+                    primaryAction: () => setPopup(null),
+                });
+            }
         } finally {
             setIsGenerating(false);
         }
@@ -81,11 +103,75 @@ export default function HomePage() {
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh' }}>
-            <Sidebar />
+        <div className="app-shell">
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Main content */}
-            <main style={{ marginLeft: 240, flex: 1, padding: '40px 48px', position: 'relative', overflow: 'hidden' }}>
+            <main className="app-main home-main">
+                {popup && (
+                    <div className="modal-backdrop" role="dialog" aria-modal="true" onClick={() => setPopup(null)}>
+                        <div className="modal-card glass" onClick={(e) => e.stopPropagation()}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: 18, letterSpacing: '-0.02em' }}>
+                                        {popup.title}
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="btn-ghost"
+                                    style={{ padding: '8px 10px', borderRadius: 10 }}
+                                    onClick={() => setPopup(null)}
+                                    aria-label="Close dialog"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-line', marginTop: 12 }}>
+                                {popup.message}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 10, marginTop: 18, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                                {popup.secondaryLabel && (
+                                    <button type="button" className="btn-ghost" onClick={popup.secondaryAction}>
+                                        {popup.secondaryLabel}
+                                    </button>
+                                )}
+                                {popup.primaryLabel && (
+                                    <button
+                                        type="button"
+                                        className="btn-primary"
+                                        style={{ padding: '12px 18px', borderRadius: 12, fontSize: 14 }}
+                                        onClick={popup.primaryAction}
+                                    >
+                                        {popup.primaryLabel}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="mobile-topbar home-topbar" style={{
+                    padding: "14px 20px",
+                    backdropFilter: "blur(20px)",
+                    background: "rgba(10,10,20,0.6)",
+                    borderBottom: "1px solid var(--sidebar-border)",
+                }}>
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        aria-label="Toggle menu"
+                        type="button"
+                    >
+                        {isSidebarOpen ? "✕" : "☰"}
+                    </button>
+                    <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                        Text<span className="gradient-text">-to-Learn</span>
+                    </div>
+                    <div style={{ width: 44 }} />
+                </div>
 
                 {/* Background orbs (subtle) */}
                 <div style={{
@@ -110,7 +196,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Generate Course Card */}
-                <div className="fade-up fade-up-1 glass" style={{
+                <div className="fade-up fade-up-1 glass generate-card" style={{
                     padding: '36px 40px', marginBottom: 40,
                     borderColor: 'var(--glass-border)',
                     boxShadow: '0 0 60px rgba(99,102,241,0.08)',
@@ -125,19 +211,21 @@ export default function HomePage() {
                         Type any topic below and AI will build a full structured course for you.
                     </p>
 
-                    <form onSubmit={handleGenerate} style={{ display: 'flex', gap: 12 }}>
+                    <form
+                        onSubmit={handleGenerate}
+                        className="flex flex-col md:flex-row gap-3 w-full"
+                    >
                         <input
-                            className="input-dark"
+                            className="input-dark w-full md:w-[80%]"
                             type="text"
                             placeholder='e.g. "Introduction to Quantum Computing"'
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
-                            style={{ flex: 1 }}
                         />
+
                         <button
                             type="submit"
-                            className="btn-primary"
-                            style={{ whiteSpace: 'nowrap', minWidth: 140 }}
+                            className="btn-primary w-full md:w-[20%]"
                             disabled={isGenerating || !prompt.trim()}
                         >
                             🚀 Generate
@@ -202,7 +290,7 @@ export default function HomePage() {
                     </div>
 
                     {/* Explore Categories (Full Width Grid) */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 20 }}>
                         {[
                             { label: 'Web Dev', icon: '💻', topic: 'Next.js and Tailwind CSS' },
                             { label: 'Space', icon: '🚀', topic: 'The James Webb Telescope' },
@@ -234,7 +322,7 @@ export default function HomePage() {
                 <div className="fade-up fade-up-4" style={{ marginTop: 60, padding: '40px', borderTop: '1px solid var(--sidebar-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                         <h4 style={{ color: 'var(--text-color)', fontWeight: 700, marginBottom: 4 }}>Ready for a challenge?</h4>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Select a trending topic and push your boundaries.</p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Select a trending <br />topic and push your boundaries.</p>
                     </div>
                     <button className="btn-ghost" onClick={() => setPrompt('Quantum Cryptography Basics')}>
                         Surprise Me 🎲

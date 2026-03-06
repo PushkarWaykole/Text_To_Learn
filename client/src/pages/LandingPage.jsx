@@ -63,28 +63,28 @@ export default function LandingPage() {
             <div className="orb orb-3" />
 
             {/* Nav */}
-            <nav style={{
+            <nav className="landing-nav" style={{
                 position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '18px 48px',
+                padding: '18px clamp(16px, 4vw, 48px)',
                 background: 'var(--glass-bg)',
                 backdropFilter: 'blur(16px)',
                 borderBottom: '1px solid var(--glass-border)',
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="landing-nav-brand" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 26 }}>🧠</span>
-                    <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--text-color)', letterSpacing: '-0.02em' }}>
+                    <span className="landing-nav-title" style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 20, color: 'var(--text-color)', letterSpacing: '-0.02em' }}>
                         Text<span className="gradient-text">-to-Learn</span>
                     </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                <div className="landing-nav-actions" style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                     <button
                         onClick={toggleTheme}
                         style={{
                             background: 'var(--input-bg)',
                             border: '1px solid var(--glass-border)',
                             color: 'var(--text-color)',
-                            padding: '8px 12px',
+                            padding: '10px 12px',
                             borderRadius: '10px',
                             cursor: 'pointer',
                             display: 'flex',
@@ -99,14 +99,15 @@ export default function LandingPage() {
                         {isDarkMode ? '☀️' : '🌙'}
                     </button>
                     <button
-                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500, cursor: 'pointer', transition: '0.2s' }}
+                        className="landing-nav-login"
+                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: '0.2s', padding: '10px 10px', borderRadius: 10 }}
                         onMouseEnter={e => e.target.style.color = 'var(--text-color)'}
                         onMouseLeave={e => e.target.style.color = 'var(--text-secondary)'}
                         onClick={() => loginWithRedirect()}
                     >
                         Log In
                     </button>
-                    <button className="btn-primary" style={{ padding: '10px 24px', borderRadius: 10, fontSize: 14 }} onClick={() => loginWithRedirect()} disabled={isLoading}>
+                    <button className="btn-primary landing-nav-signup" style={{ padding: '12px 18px', borderRadius: 12, fontSize: 14 }} onClick={() => loginWithRedirect()} disabled={isLoading}>
                         {isLoading ? 'Loading…' : 'Sign Up'}
                     </button>
                 </div>
@@ -119,7 +120,7 @@ export default function LandingPage() {
                 padding: '160px 24px 100px',
                 position: 'relative', zIndex: 10, textAlign: 'center',
             }}>
-                <div className="badge badge-indigo animate-bounce fade-up" style={{ marginBottom: 32, fontSize: 13, padding: '6px 16px' }}>
+                <div className="badge badge-indigo landing-new-badge animate-bounce fade-up" style={{ marginBottom: 32, fontSize: 13, padding: '6px 16px' }}>
                     🚀 New: Gemini 2.5 Flash Support Integrated
                 </div>
 
@@ -150,18 +151,18 @@ export default function LandingPage() {
                     into structured modules with video, audio, and quizzes — instantly.
                 </p>
 
-                <div className="fade-up fade-up-3" style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <div className="fade-up fade-up-3 landing-cta" style={{ display: 'flex', gap: 20, flexWrap: 'wrap', justifyContent: 'center' }}>
                     <button
                         className="btn-primary"
-                        style={{ fontSize: 18, padding: '18px 48px', borderRadius: 16 }}
+                        style={{ fontSize: 'clamp(16px, 4vw, 18px)', padding: 'clamp(14px, 3.5vw, 18px) clamp(22px, 6vw, 48px)', borderRadius: 16, minHeight: 48 }}
                         onClick={() => loginWithRedirect()}
                         disabled={isLoading}
                     >
                         {isLoading ? 'Loading…' : 'Get Started for Free'}
                     </button>
-                    <button className="glass-hover" style={{
-                        fontSize: 16, padding: '16px 32px', borderRadius: 16, border: '1px solid var(--glass-border)',
-                        background: 'var(--glass-bg)', color: 'var(--text-color)', cursor: 'pointer', transition: '0.3s'
+                    <button className="glass-hover landing-cta-secondary" style={{
+                        fontSize: 'clamp(15px, 3.8vw, 16px)', padding: 'clamp(13px, 3.2vw, 16px) clamp(18px, 5vw, 32px)', borderRadius: 16, border: '1px solid var(--glass-border)',
+                        background: 'var(--glass-bg)', color: 'var(--text-color)', cursor: 'pointer', transition: '0.3s', minHeight: 48
                     }}
                         onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}>
                         Explore Features
@@ -259,7 +260,7 @@ export default function LandingPage() {
                             Hyper-Personalized <br /> <span className="gradient-text">Learning Tools</span>
                         </h2>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 32 }}>
                         {features.map((f, i) => (
                             <div key={i} className="glass glass-hover" style={{ padding: 40, borderRadius: 24 }}>
                                 <div style={{
@@ -291,7 +292,7 @@ export default function LandingPage() {
                     }}>
                         Your Learning Journey <br /> in <span className="gradient-text">4 Simple Steps</span>
                     </h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 32 }}>
                         {steps.map((s, i) => (
                             <div key={i} className="glass" style={{
                                 padding: 40, textAlign: 'center', position: 'relative', borderRadius: 28,
@@ -360,11 +361,6 @@ export default function LandingPage() {
                 color: 'var(--text-secondary)', fontSize: 14, position: 'relative', zIndex: 10,
                 display: 'flex', flexDirection: 'column', gap: 16
             }}>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 8 }}>
-                    <span style={{ cursor: 'pointer' }}>Twitter</span>
-                    <span style={{ cursor: 'pointer' }}>Discord</span>
-                    <span style={{ cursor: 'pointer' }}>GitHub</span>
-                </div>
                 <span>© 2026 Text-to-Learn · Built by <a href="https://github.com/PushkarWaykole" target="_blank" style={{ color: 'inherit', fontWeight: 600 }}>Pushkar</a></span>
             </footer>
         </div>

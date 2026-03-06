@@ -86,6 +86,12 @@ export const generateCourse = async (req, res, next) => {
         const user = await User.findOne({ auth0Id });
         if (!user) return res.status(404).json({ error: "User not found. Please sync." });
 
+        // Enforce per-user course/project cap (server-side, authoritative)
+        const existingCount = await Course.countDocuments({ creator: user._id, isDeleted: false });
+        if (existingCount >= 5) {
+            return res.status(403).json({ error: "Course limit reached (max 5). Delete an existing course to create a new one." });
+        }
+
         if (!process.env.GEMINI_API_KEY) {
             console.error("GEMINI_API_KEY is undefined in process.env");
             return res.status(500).json({ error: "GEMINI_API_KEY is missing. Did you restart the server?" });

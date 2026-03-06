@@ -12,6 +12,16 @@ export default function CoursePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [isModulesOpen, setIsModulesOpen] = useState(false);
+
+    useEffect(() => {
+        if (!isModulesOpen) return;
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [isModulesOpen]);
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -157,10 +167,12 @@ export default function CoursePage() {
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-color)' }}>
             {/* Sidebar layout for the course */}
-            <aside style={{
-                width: 320, background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)',
-                display: 'flex', flexDirection: 'column', position: 'fixed', insetY: 0, height: '100vh', zIndex: 20
-            }}>
+            <div
+                className={`sidebar-backdrop ${isModulesOpen ? 'sidebar-backdrop-show' : ''}`}
+                onClick={() => setIsModulesOpen(false)}
+                aria-hidden={!isModulesOpen}
+            />
+            <aside className={`course-sidebar ${isModulesOpen ? 'course-sidebar-open' : ''}`}>
 
                 {/* Course Header */}
                 <div style={{ padding: 24, borderBottom: '1px solid var(--sidebar-border)', background: 'var(--sidebar-bg)', backdropFilter: 'blur(8px)' }}>
@@ -192,6 +204,7 @@ export default function CoursePage() {
                                         borderColor: isActive ? '#4f46e5' : 'var(--glass-border)',
                                         boxShadow: isActive ? '0 10px 15px -3px rgba(99, 102, 241, 0.3)' : 'none'
                                     }}
+                                    onClick={() => setIsModulesOpen(false)}
                                 >
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                         <div style={{ fontSize: 10, fontWeight: 800, marginBottom: 4, color: isActive ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)' }}>
@@ -210,13 +223,43 @@ export default function CoursePage() {
             </aside>
 
             {/* Main Content Area */}
-            <main style={{ flex: 1, marginLeft: 320, minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', paddingBottom: 60 }}>
+            <main className="course-main">
                 {/* Glow effect */}
                 <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-                <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', width: '100%', maxWidth: 1000, margin: '0 auto', padding: '64px 48px' }}>
+                <div className="mobile-topbar">
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={() => setIsModulesOpen(true)}
+                        aria-label="Open modules"
+                        type="button"
+                    >
+                        ☰
+                    </button>
+                    <div style={{
+                        fontFamily: 'Outfit, sans-serif',
+                        fontWeight: 900,
+                        letterSpacing: '-0.02em',
+                        textAlign: 'center'
+                    }}>
+                        {course?.title || 'Course'}
+                    </div>
+                    <div style={{ width: 44 }} />
+                </div>
 
-                    <div style={{ marginBottom: 48, borderBottom: '1px solid var(--sidebar-border)', paddingBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 24 }}>
+                <div
+                    className="custom-scrollbar"
+                    style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        width: '100%',
+                        maxWidth: 1000,
+                        margin: '0 auto',
+                        padding: 'clamp(20px, 4vw, 64px) clamp(16px, 4vw, 48px)'
+                    }}
+                >
+
+                    <div className="course-header">
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                                 <span style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)', fontWeight: 700, padding: '4px 10px', borderRadius: 4, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -239,11 +282,11 @@ export default function CoursePage() {
                                 {activeModule?.title || 'Unknown Module'}
                             </h2>
                         </div>
-                        <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
+                        <div className="course-header-actions">
                             <button
                                 onClick={() => handleModuleComplete(activeModule?._id, null)}
                                 disabled={course.completedModules?.includes(activeModule?._id)}
-                                className={`h-10 px-6 rounded-lg font-bold text-sm transition-all border whitespace-nowrap`}
+                                className={`mark-read-btn h-10 px-6 rounded-lg font-bold text-sm transition-all border whitespace-nowrap`}
                                 style={{
                                     cursor: course.completedModules?.includes(activeModule?._id) ? 'default' : 'pointer',
                                     background: course.completedModules?.includes(activeModule?._id) ? 'rgba(16,185,129,0.1)' : '#6366f1',
@@ -257,7 +300,7 @@ export default function CoursePage() {
                             <button
                                 onClick={downloadPDF}
                                 disabled={isExporting}
-                                className="glass-hover"
+                                className="glass-hover course-pdf-btn"
                                 style={{
                                     height: 40, padding: '0 20px', borderRadius: 8, border: '1px solid var(--glass-border)',
                                     background: 'var(--glass-bg)', color: 'var(--text-color)',
@@ -281,7 +324,7 @@ export default function CoursePage() {
 
                     {/* Module Navigation */}
                     {course.modules?.length > 0 && activeModule && (
-                        <div style={{ marginTop: 64, paddingTop: 32, borderTop: '1px solid var(--sidebar-border)', display: 'flex', justifyContent: 'space-between' }}>
+                        <div className="course-nav" style={{ marginTop: 64, paddingTop: 32, borderTop: '1px solid var(--sidebar-border)' }}>
                             {activeModule.order > 0 ? (
                                 <Link
                                     to={`/course/${course._id}/module/${course.modules[activeModule.order - 1]._id}`}

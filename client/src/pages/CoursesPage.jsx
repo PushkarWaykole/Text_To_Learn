@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar';
 export default function CoursesPage() {
     const [myCourses, setMyCourses] = useState([]);
     const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         const fetchCourses = async () => {
@@ -22,11 +23,25 @@ export default function CoursesPage() {
     }, []);
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh' }}>
-            <Sidebar />
+        <div className="app-shell">
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Main content */}
-            <main style={{ marginLeft: 240, flex: 1, padding: '40px 48px', position: 'relative', overflow: 'hidden' }}>
+            <main className="app-main">
+                <div className="mobile-topbar">
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={() => setIsSidebarOpen(true)}
+                        aria-label="Open menu"
+                        type="button"
+                    >
+                        ☰
+                    </button>
+                    <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                        Text<span className="gradient-text">-to-Learn</span>
+                    </div>
+                    <div style={{ width: 44 }} />
+                </div>
 
                 {/* Background orbs */}
                 <div style={{
