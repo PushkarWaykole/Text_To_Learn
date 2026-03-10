@@ -5,6 +5,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import protectedRoutes from './routes/protectedRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -13,6 +15,8 @@ import audioRoutes from './routes/audioRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ── Security & Logging Middlewares ─────────────────────────────────────────
 app.use(helmet());
@@ -48,6 +52,18 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/audio', audioRoutes);
 app.use('/api', protectedRoutes);
+
+// ── Serve Client (Production) ───────────────────────────────────────────────
+// Fixes "refresh on /course/:id gives 404" when using BrowserRouter.
+if (process.env.NODE_ENV === 'production') {
+    const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+    app.use(express.static(clientDistPath));
+
+    // Any non-API route should return the SPA entrypoint.
+    app.get(/^\/(?!api).*/, (req, res) => {
+        res.sendFile(path.join(clientDistPath, 'index.html'));
+    });
+}
 
 // ── Global Error Handler ───────────────────────────────────────────────────
 app.use((err, req, res, next) => {

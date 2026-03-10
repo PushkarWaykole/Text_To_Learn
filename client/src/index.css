@@ -61,6 +61,22 @@ body {
   padding: 0;
   -webkit-font-smoothing: antialiased;
   transition: background 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+/* Prevent accidental horizontal scrolling on mobile */
+html,
+body {
+  max-width: 100%;
+}
+
+/* Media/content safety: avoid elements forcing overflow */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
 }
 
 /* ── Animated Gradient Orbs ────────────────────────────────────────────── */
@@ -271,11 +287,14 @@ body {
 .app-shell {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .app-main {
   margin-left: var(--app-sidebar-width);
   flex: 1;
+  min-width: 0;
   padding: 40px 48px;
   position: relative;
   overflow: hidden;
@@ -320,6 +339,7 @@ body {
 .course-main {
   flex: 1;
   margin-left: var(--course-sidebar-width);
+  min-width: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;

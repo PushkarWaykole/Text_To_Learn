@@ -255,12 +255,22 @@ export default function HomePage() {
                 </div>
 
                 {/* Stats row */}
-                <div className="fade-up fade-up-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20, marginBottom: 40, maxWidth: 800 }}>
+                <div
+                    className="fade-up fade-up-2"
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                        gap: 16,
+                        marginBottom: 40,
+                        maxWidth: 800,
+                        width: '100%',
+                    }}
+                >
                     {[
                         { label: 'Courses Created', value: coursesCount.toString(), icon: '📚', color: '#6366f1' },
                         { label: 'Lessons Completed', value: lessonsCompleted.toString(), icon: '✅', color: '#10b981' },
                     ].map((stat) => (
-                        <div key={stat.label} className="glass glass-hover" style={{ padding: '24px 28px' }}>
+                        <div key={stat.label} className="glass glass-hover" style={{ padding: '20px 18px' }}>
                             <div style={{ fontSize: 28, marginBottom: 8 }}>{stat.icon}</div>
                             <div style={{
                                 fontFamily: 'Outfit, sans-serif', fontSize: 32, fontWeight: 800,
@@ -338,9 +348,11 @@ export default function HomePage() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                         <div className="glass" style={{
-                            padding: '48px 64px', textAlign: 'center', maxWidth: 450,
+                            width: 'min(450px, calc(100vw - 32px))',
+                            padding: 'clamp(24px, 6vw, 48px) clamp(18px, 6vw, 64px)',
+                            textAlign: 'center',
                             borderColor: 'var(--glass-border)',
-                            transform: 'scale(1.1)', boxShadow: '0 0 100px rgba(99,102,241,0.2)'
+                            boxShadow: '0 0 100px rgba(99,102,241,0.2)'
                         }}>
                             <div style={{ marginBottom: 32, position: 'relative' }}>
                                 <div className="animate-spin" style={{
