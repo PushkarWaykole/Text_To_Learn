@@ -272,16 +272,21 @@ svg {
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(30px);
-  background: rgba(15, 15, 25, 0.75);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(10, 10, 20, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: none;
   z-index: 40;
 }
 
 .sidebar {
   z-index: 50;
+}
+
+.sidebar,
+.course-sidebar {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .app-shell {

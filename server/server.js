@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 import protectedRoutes from './routes/protectedRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -53,15 +54,17 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/audio', audioRoutes);
 app.use('/api', protectedRoutes);
 
-// ── Serve Client (Production) ───────────────────────────────────────────────
-// Fixes "refresh on /course/:id gives 404" when using BrowserRouter.
-if (process.env.NODE_ENV === 'production') {
-    const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+// ── Serve Client SPA (when built) ───────────────────────────────────────────
+// Fixes "refresh on /course/:id/module/:moduleId gives 404" with BrowserRouter.
+// This is enabled whenever a Vite build exists at client/dist (regardless of NODE_ENV).
+const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+const clientIndexPath = path.join(clientDistPath, 'index.html');
+if (fs.existsSync(clientIndexPath)) {
     app.use(express.static(clientDistPath));
 
     // Any non-API route should return the SPA entrypoint.
     app.get(/^\/(?!api).*/, (req, res) => {
-        res.sendFile(path.join(clientDistPath, 'index.html'));
+        res.sendFile(clientIndexPath);
     });
 }
 
