@@ -101,6 +101,7 @@ export default function HomePage() {
     const firstName = user?.name?.split(' ')[0] || 'there';
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    const appVersion = import.meta.env.VITE_APP_VERSION || 'dev';
 
     return (
         <div className="app-shell">
@@ -329,7 +330,7 @@ export default function HomePage() {
                     </div>
                 </div>
 
-                <div className="fade-up fade-up-4" style={{ marginTop: 60, padding: '40px', borderTop: '1px solid var(--sidebar-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="fade-up fade-up-4" style={{ marginTop: 60, padding: '40px', borderTop: '1px solid var(--sidebar-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                     <div>
                         <h4 style={{ color: 'var(--text-color)', fontWeight: 700, marginBottom: 4 }}>Ready for a challenge?</h4>
                         <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Select a trending <br />topic and push your boundaries.</p>
@@ -337,6 +338,13 @@ export default function HomePage() {
                     <button className="btn-ghost" onClick={() => setPrompt('Quantum Cryptography Basics')}>
                         Surprise Me 🎲
                     </button>
+                </div>
+
+                {/* Build/version info (useful to verify deployments) */}
+                <div style={{ marginTop: 8, padding: '0 40px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-secondary)', opacity: 0.7 }}>
+                        Version: {appVersion}
+                    </span>
                 </div>
 
                 {/* Loading Overlay */}

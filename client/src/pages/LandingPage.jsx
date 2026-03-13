@@ -41,6 +41,7 @@ export default function LandingPage() {
         const saved = localStorage.getItem('theme');
         return saved ? saved === 'dark' : true; // Default to dark mode
     });
+    const appVersion = import.meta.env.VITE_APP_VERSION || 'dev';
 
     React.useEffect(() => {
         if (isDarkMode) {
@@ -354,14 +355,33 @@ export default function LandingPage() {
             </section>
 
             {/* Footer */}
-            <footer style={{
-                borderTop: '1px solid var(--sidebar-border)',
-                padding: '48px 48px',
-                textAlign: 'center',
-                color: 'var(--text-secondary)', fontSize: 14, position: 'relative', zIndex: 10,
-                display: 'flex', flexDirection: 'column', gap: 16
-            }}>
-                <span>© 2026 Text-to-Learn · Built by <a href="https://github.com/PushkarWaykole" target="_blank" style={{ color: 'inherit', fontWeight: 600 }}>Pushkar</a></span>
+            <footer
+                style={{
+                    borderTop: '1px solid var(--sidebar-border)',
+                    padding: '32px 24px 40px',
+                    textAlign: 'center',
+                    color: 'var(--text-secondary)',
+                    fontSize: 14,
+                    position: 'relative',
+                    zIndex: 10,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    alignItems: 'center',
+                }}
+            >
+                <span>
+                    © 2026 Text-to-Learn · Built by{' '}
+                    <a
+                        href="https://github.com/PushkarWaykole"
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: 'inherit', fontWeight: 600 }}
+                    >
+                        Pushkar
+                    </a>
+                </span>
+                <span style={{ fontSize: 11, opacity: 0.75 }}>Version: {appVersion}</span>
             </footer>
         </div>
     );
