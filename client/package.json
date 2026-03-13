@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "VITE_APP_VERSION=$(date +%Y-%m-%d-%H-%M) vite build",
+    "build": "TZ=Asia/Kolkata VITE_APP_VERSION=$(date '+%d-%m-%Y %H:%M') vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.15.0",
-    "@vercel/analytics": "^1.5.0",
+    "@vercel/analytics": "^1.5.0",  
     "axios": "^1.13.6",
     "canvas-confetti": "^1.9.4",
     "html2canvas": "^1.4.1",

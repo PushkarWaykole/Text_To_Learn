@@ -272,9 +272,9 @@ svg {
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 20, 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(5, 5, 15, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   display: none;
   z-index: 40;
 }
@@ -285,8 +285,10 @@ svg {
 
 .sidebar,
 .course-sidebar {
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: rgba(10, 10, 20, 0.96);
+  border-right: 1px solid rgba(148, 163, 184, 0.35);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
 
 .app-shell {
