@@ -219,7 +219,7 @@ export default function LandingPage() {
             <section style={{ padding: '120px 24px', background: 'var(--input-bg)' }}>
                 <div style={{ maxWidth: 1000, margin: '0 auto', textAlign: 'center' }}>
                     <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-color)', marginBottom: 60, letterSpacing: '-0.02em' }}>
-                        The Future vs The Past
+                        The Past vs The Future
                     </h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32 }}>
                         {/* Old Way */}
